@@ -6,10 +6,10 @@ An **XGBoost + BGE semantic embeddings** based prompt scoring and routing system
 
 ## Core Capabilities
 
-- **Complexity Scoring**: Rates prompts on a 1-10 scale (regression model, MAE ≈ 0.9, ±1 tolerance > 80%)
-- **Model Routing**: Automatically decides whether a prompt should be upgraded to the pro model (binary classification, accuracy ≈ 84%)
+- **Complexity Scoring**: Rates prompts on a 1-10 scale (Spearman rank correlation 0.95, excellent monotonicity)
+- **Model Routing**: Automatically routes prompts to flash or pro model (simple → flash, complex → pro)
 - **Multi-semantic Features**: 512-dimensional text embeddings from `BAAI/bge-small-zh-v1.5`, combined with lightweight statistical features (character count, code/math symbol detection, etc.)
-- **High-performance Inference**: < 15ms per inference (CPU), supports batch evaluation
+- **High-performance Inference**: 14ms avg per inference (CPU), supports batch evaluation
 - **Ready-to-use API**: FastAPI + uvicorn deployment with standard REST endpoints
 
 ## Project Structure
@@ -124,14 +124,32 @@ prompt text
 
 ## Model Performance
 
-| Metric | Scorer | Router |
-|--------|--------|--------|
-| MAE | 0.89 | — |
-| Accuracy (exact) | 29.4% | 83.8% |
-| ±1 Tolerance | 83.4% | — |
-| Precision | — | 94.6% |
-| Recall | — | 82.5% |
-| Inference Latency (CPU) | < 15ms | < 15ms |
+> Results from `score_test.js` across 50 test cases (5 difficulty levels, 10 prompts each).
+
+| Metric | Value |
+|--------|-------|
+| Spearman rank correlation | 0.95 |
+| Exact match | 16.0% (8/50) |
+| ±1 tolerance | 56.0% (28/50) |
+| ±2 tolerance | 86.0% (43/50) |
+| Inference latency (avg) | 14ms |
+
+### Performance by Level
+
+| Level | Expected | Exact | ±1 | ±2 | Avg Actual |
+|-------|----------|-------|----|----|-------------|
+| 1 (Trivial) | 1-2 | 0% | 20% | 60% | 3.80 |
+| 2 (Easy) | 3-4 | 20% | 50% | 90% | 4.90 |
+| 3 (Medium) | 5-6 | 30% | 100% | 100% | 5.40 |
+| 4 (Hard) | 7-8 | 30% | 100% | 100% | 7.20 |
+| 5 (Extreme) | 9-10 | 0% | 10% | 80% | 7.40 |
+
+### Routing Distribution
+
+- **flash** (10 calls): avg score 3.80, range 3-5
+- **pro** (40 calls): avg score 6.22, range 4-8
+
+The model performs best in the middle difficulty range (levels 3-4), with some regression toward the mean at the extremes. The Spearman 0.95 confirms near-perfect rank ordering.
 
 ## Testing
 
@@ -141,10 +159,12 @@ Run the API test suite (requires Node.js):
 node score_test.js
 ```
 
-The test script generates 50 prompts across 5 difficulty levels, calls the API, and produces a comprehensive report:
-- Spearman rank correlation: 0.95 (excellent monotonicity)
-- ±2 tolerance accuracy: 86%
-- Actual output range: 3-8 (middle range ±1 match rate: 100%)
+Current test results:
+
+- Spearman rank correlation: **0.95** (excellent monotonicity)
+- ±2 tolerance accuracy: **86.0%**
+- Average latency: **14ms**
+- Middle range (levels 3-4) ±1 match rate: **100%**
 
 ## Dependencies
 
