@@ -1,5 +1,7 @@
 # Prompt Scorer & Router
 
+[English](./README_EN.md) | 中文
+
 一个基于 **XGBoost + BGE 语义嵌入** 的 prompt 评分与路由系统。给定任意中文/英文 prompt，返回一个 **1-10 的复杂度评分**，并自动判断应路由到简单模型（`deepseek-v4-flash`）还是高级模型（`deepseek-v4-pro`）。
 
 ## 核心能力

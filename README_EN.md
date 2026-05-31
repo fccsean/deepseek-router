@@ -1,5 +1,7 @@
 # Prompt Scorer & Router
 
+EN | [中文](./README.md)
+
 An **XGBoost + BGE semantic embeddings** based prompt scoring and routing system. Given any Chinese or English prompt, it returns a **complexity score from 1-10** and automatically determines whether to route to a lightweight model (`deepseek-v4-flash`) or an advanced model (`deepseek-v4-pro`).
 
 ## Core Capabilities
