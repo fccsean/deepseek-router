@@ -1,3 +1,9 @@
+# macOS
+.DS_Store
+
+# Generated data (can be reproduced from src/train.py)
+data/processed/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
