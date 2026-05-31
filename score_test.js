@@ -4,7 +4,7 @@
  * 接口: POST /score  {"prompt": "..."}  →  {"score": N, "model": "..."}
  * Score 范围: 1-10
  * 
- * 生成 50 条不同难度的 prompt，测试接口返回的 score 是否合理。
+ * 生成 100 条不同难度的 prompt，测试接口返回的 score 是否合理。
  * 预期难度映射:
  *   等级1 (极简)   → expected 1-2
  *   等级2 (简单)   → expected 3-4
@@ -15,7 +15,7 @@
 
 const BASE_URL = "http://localhost:8000/score";
 
-// ====== 50 条 Prompt，按预期难度分为 5 个等级，每个等级 10 条 ======
+// ====== 100 条 Prompt，按预期难度分为 5 个等级，每个等级 20 条 ======
 
 const prompts = [
   // ---------- 等级1: 极简单 (预期 score ≈ 1-2) ----------
@@ -29,6 +29,16 @@ const prompts = [
   { id: "E1-08", expected: 2, prompt: "1+1等于几" },
   { id: "E1-09", expected: 2, prompt: "苹果用英语怎么说" },
   { id: "E1-10", expected: 2, prompt: "说个笑话" },
+  { id: "E1-11", expected: 1, prompt: "行" },
+  { id: "E1-12", expected: 1, prompt: "好的好的" },
+  { id: "E1-13", expected: 1, prompt: "OK" },
+  { id: "E1-14", expected: 1, prompt: "对" },
+  { id: "E1-15", expected: 2, prompt: "现在几点" },
+  { id: "E1-16", expected: 2, prompt: "今天天气怎么样" },
+  { id: "E1-17", expected: 2, prompt: "你是谁" },
+  { id: "E1-18", expected: 2, prompt: "翻译成英文：谢谢" },
+  { id: "E1-19", expected: 2, prompt: "帮我算一下100除以7" },
+  { id: "E1-20", expected: 2, prompt: "推荐一首中文歌" },
 
   // ---------- 等级2: 简单 (预期 score ≈ 3-4) ----------
   { id: "E2-01", expected: 3, prompt: "介绍一下马斯克" },
@@ -41,6 +51,16 @@ const prompts = [
   { id: "E2-08", expected: 4, prompt: "写一篇200字的自我介绍" },
   { id: "E2-09", expected: 4, prompt: "有哪些高效学英语的方法" },
   { id: "E2-10", expected: 4, prompt: "对比一下淘宝和京东的区别" },
+  { id: "E2-11", expected: 3, prompt: "什么是区块链" },
+  { id: "E2-12", expected: 3, prompt: "介绍一下中国的四大发明" },
+  { id: "E2-13", expected: 3, prompt: "如何保持身体健康" },
+  { id: "E2-14", expected: 3, prompt: "常见的机器学习算法有哪些" },
+  { id: "E2-15", expected: 4, prompt: "对比一下iOS和Android系统的优缺点" },
+  { id: "E2-16", expected: 4, prompt: "写一篇500字的读书笔记" },
+  { id: "E2-17", expected: 4, prompt: "简述美国独立战争的历史背景和影响" },
+  { id: "E2-18", expected: 4, prompt: "如何用Excel做数据分析" },
+  { id: "E2-19", expected: 4, prompt: "介绍几种常见的投资理财方式" },
+  { id: "E2-20", expected: 4, prompt: "解释什么是5G技术及其应用场景" },
 
   // ---------- 等级3: 中等 (预期 score ≈ 5-6) ----------
   { id: "E3-01", expected: 5, prompt: "用Python写一个快速排序算法并分析时间复杂度" },
@@ -53,6 +73,16 @@ const prompts = [
   { id: "E3-08", expected: 6, prompt: "说明Kubernetes部署微服务的核心步骤和注意事项" },
   { id: "E3-09", expected: 6, prompt: "解释GPT中Transformer架构的自注意力机制" },
   { id: "E3-10", expected: 6, prompt: "设计一个电商推荐系统的技术方案和数据流" },
+  { id: "E3-11", expected: 5, prompt: "用Java实现一个线程安全的LRU缓存" },
+  { id: "E3-12", expected: 5, prompt: "解释TCP拥塞控制算法并分析BBR的性能优势" },
+  { id: "E3-13", expected: 5, prompt: "对比梯度提升和随机森林在分类任务上的表现" },
+  { id: "E3-14", expected: 5, prompt: "设计一个支持多租户的SaaS权限模型" },
+  { id: "E3-15", expected: 5, prompt: "分析CDN加速原理并设计全局负载均衡方案" },
+  { id: "E3-16", expected: 6, prompt: "从零实现一个支持MVCC的简化数据库引擎" },
+  { id: "E3-17", expected: 6, prompt: "讲清楚深度学习中的批量归一化原理和训练/推理差异" },
+  { id: "E3-18", expected: 6, prompt: "分析分库分表后跨分片查询的方案：中间件、ES宽表、异构索引" },
+  { id: "E3-19", expected: 6, prompt: "设计一个秒杀系统的架构，覆盖前端、网关、后端、数据层，预估QPS" },
+  { id: "E3-20", expected: 6, prompt: "解释大语言模型推理的KV cache机制并分析其内存占用与优化手段" },
 
   // ---------- 等级4: 困难 (预期 score ≈ 7-8) ----------
   { id: "E4-01", expected: 7, prompt: "深入分析CAP理论在分布式数据库中的权衡，结合Spanner和DynamoDB的实际架构给出具体建议" },
@@ -65,6 +95,16 @@ const prompts = [
   { id: "E4-08", expected: 8, prompt: "为Web3社交平台设计完整通证经济模型：代币发行机制、创作者激励博弈论分析、治理数学建模、抗女巫攻击、Solidity核心合约" },
   { id: "E4-09", expected: 8, prompt: "从第一性原理推导半导体器件微型化极限：量子隧穿在3nm以下影响、TFET工作原理、光子计算可行性、2035年技术路线图" },
   { id: "E4-10", expected: 8, prompt: "实现面向超大规模图的分布式社区发现算法：十亿节点级Louvain的MPI/GPU加速、动态图增量计算、Graph500扩展性分析" },
+  { id: "E4-11", expected: 7, prompt: "为分布式追踪系统设计自适应采样策略：基于尾延迟的异常自适应、分层采样、尾部过采样，兼顾成本与信号保真度" },
+  { id: "E4-12", expected: 7, prompt: "为一门新语言设计类型推断系统：Hindley-Milner 扩展、子类型多态、结构化类型与名义类型联合和交叉类型统一，附实现" },
+  { id: "E4-13", expected: 7, prompt: "设计多模态推荐系统冷启动方案：对比学习跨模态对齐、扩散生成物品内容、反事实数据增强，给出消融实验设计" },
+  { id: "E4-14", expected: 7, prompt: "用Rust实现零拷贝异步I/O网络库：io_uring驱动、Arena分配器、无锁ring buffer、trait-based分层超时与退避、C10M基准" },
+  { id: "E4-15", expected: 8, prompt: "设计高能物理探测器无触发连续读出DAQ：TB/s光纤前端无损压缩、PCIe Gen6 GPU直接数据摄取、实时重建pipeline" },
+  { id: "E4-16", expected: 8, prompt: "推导Transformer KV缓存量化的信息论下界：分组、异常值和激活感知量化的理论依据，在Llama-70B量化实验中验证" },
+  { id: "E4-17", expected: 8, prompt: "为下一代编译框架设计中间表示：一阶类型化SSA设计、GPU和量子后端所需扩展、可微语义标注、多IR增量重写策略" },
+  { id: "E4-18", expected: 8, prompt: "从零构建大规模时序异常检测平台：在线分解、多时间尺度季节性建模、根因定位图算法、毫秒级告警，处理10M指标/s" },
+  { id: "E4-19", expected: 8, prompt: "从零实现全功能BPF可编程数据平面：XDP解析器语言、有状态流表、有界运行时验证器、SmartNIC卸载（附带DPDK对比基准）" },
+  { id: "E4-20", expected: 8, prompt: "设计联邦多模态基础模型的异质性鲁棒训练：客户端分组、局部LoRA混合、差分隐私噪声校准、跨模态蒸馏" },
 
   // ---------- 等级5: 极难 (预期 score ≈ 9-10) ----------
   { id: "E5-01", expected: 9, prompt: "设计AGI系统完整技术方案：多模态感知世界模型统一架构、因果推理长期规划、元学习持续学习框架、AI对齐价值加载方案" },
@@ -77,6 +117,16 @@ const prompts = [
   { id: "E5-08", expected: 10, prompt: "构建全球实时语言无损翻译系统：100+语言端到端语音翻译架构、文化语境跨语言保真度建模、百毫秒推理优化、同态加密隐私保护" },
   { id: "E5-09", expected: 10, prompt: "设计光年星际文明通信协议：量子纠缠超距通信理论极限、星际衰减模型与纠错码、未知文明首次接触通用语义编码、Great Filter风险对策" },
   { id: "E5-10", expected: 10, prompt: "提出人体衰老工程化逆转方案：端粒延长与表观遗传重编程精确调控、衰老细胞清除与再生时空控制、线粒体基因回路设计、免疫年轻化细胞治疗、FDA审批路径" },
+  { id: "E5-11", expected: 9, prompt: "设计跨链去中心化交易所的共识机制：异构分片原子交换协议、零知识跨链状态证明、MEV抗性曲线、动态验证者质押优化" },
+  { id: "E5-12", expected: 9, prompt: "设计神经符号AI混合架构：结合逻辑推理引擎与Transformer的定理自动证明和科学发现系统，给出元理论完备性证明" },
+  { id: "E5-13", expected: 9, prompt: "建模全球金融市场系统性风险：多层网络传导模型、异质主体强化学习、央行数字货币宏观影响、压力测试反事实模拟框架" },
+  { id: "E5-14", expected: 9, prompt: "从第一性原理推导室温超导体的电子-声子耦合机理：强关联电子DFT+DMFT模拟、磁通蠕变、设计高通量掺杂优化筛选pipeline" },
+  { id: "E5-15", expected: 10, prompt: "为GPT-6级别万亿参数大模型设计端到端训练和推理基础设施：3D并行性、分散式优化器、流水线气泡消除、P2P分布式KV缓存、优雅降级" },
+  { id: "E5-16", expected: 10, prompt: "提出并形式化验证AI宪法对齐框架：多目标价值函数、道德不确定性下的最小化后悔、反事实人类模拟、形式化规范博弈论、宪法修正算法" },
+  { id: "E5-17", expected: 10, prompt: "设计量子互联网协议栈：纠缠分发网络编码、量子中继器高效蒸馏、后量子认证、盲量子计算委托" },
+  { id: "E5-18", expected: 10, prompt: "设计全新城市空中交通管制系统：分布式4D轨迹协商与冲突解决、基于STPA的安全性案例、V2X通信、10万架eVTOL同时运行" },
+  { id: "E5-19", expected: 10, prompt: "提出蛋白质-配体结合亲和力预测的图等变神经网络联合自由能微扰计算、长程静电的笛卡尔多极展开、主动学习闭环的端到端方案" },
+  { id: "E5-20", expected: 10, prompt: "设计地球系统工程决策平台：耦合的大气-海洋-陆地-社会经济集成评估模型、多目标帕累托最优路径、深度不确定性下的稳健决策" },
 ];
 
 async function testOne({ id, expected, prompt }) {
